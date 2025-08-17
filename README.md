@@ -24,4 +24,26 @@ The Envivorments Paths to these Must be Set in your system.
 ### Setup
 
 Clone This Repository Using
+
 `git clone https://github.com/MageMusti/Genetic-Program-For-Equation`
+
+## Usage
+
+Browse To the Repository Directory on you Terminal
+Then run the Program as Follows:
+
+`python GeneticProgram.py /path/to/csvfile`
+
+Some Example csv files are Provided in the CSV Directory.
+### Hyper Parameters
+The Program has Following Configurable Hyper Parameters.
+
+MAXDEPTH: Sets the Max Depth of Eqaution Tree. Alter to Control Complexity of Result.(Default: 2)
+MAXGEN: Number of Maximum Generation to Explore Before Exiting. (Default: 20)
+GENSIZE:Number of Programs per Generation.(Default: 10)
+XOP: The Probability of a Crossover Occuring.(Default: 0.8)
+MAXXO: The Maximum Number of Crossover That Occur Per Generation.(Default: Floor of GENSIZE/5)
+MUTP:  The Probability of a Mutation Occuring.(Default: 0.5)
+MAXMUT: The Maximum Number of Mutation That Occur Per Generation.(Default: Floor of GENSIZE/10)
+REPORT: The Path to Report PDF file Without .pdf Extenstion.(Default: Result.pdf in Project Directory)
+VERBOSE: Pause After Each Generation to Show Crossover and Mutation verbose Output with Total and Average Error(Default: False)
