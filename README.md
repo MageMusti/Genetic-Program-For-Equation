@@ -56,3 +56,25 @@ REPORT: The Path to Report PDF file Without .pdf Extenstion.(Default: Result.pdf
 
 VERBOSE: Pause After Each Generation to Show Crossover and Mutation verbose Output with Total and Average 
 Error(Default: False)
+
+FSET: The Set of Operations and Function to Include in Program. Add E for Exponentiation, P for Square and Cube,R for Square root and Cube Root, T for sin,cos and tan.(Default: Addition,Subtraction,Multiplication and Division only).
+
+### Configure Using CLI
+
+The Hyper Parameters Can be Configured using the Command Line as Follows:
+
+`python GeneticProgram.py --<Param_Name>:<Value>  /path/to/csvfile`
+
+for Verbose true, Include -v or --VERBOSE Before File Name. For Verbose False, don't Include it.
+
+### Configure Using Yaml
+
+The Hyper Parameters Can be Configured Form a Yaml File as Follows:
+
+`python GeneticProgram.py --CONFIG:/path/to/yamlfile /path/to/csvfile`
+
+For Format of yaml File, Sample Files are Provided in Config Directory.
+
+### Results
+The Output of the Genetic Program is Stored in the Specified PDF file.(if pdflatex is avalible)
+The Results can be Viewed using a pdf viewer like Adobe Arcobat Reader or Mircosoft Office 365.
