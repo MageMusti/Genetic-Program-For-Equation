@@ -14,7 +14,9 @@ The Values of Hyperparameters, Top 5 Best performing Eqautions and Table of Tota
 
 ### Prerequiste
 For this Program The Following are Required:
-> Python 3.10+ (Python 3.12 recommanded)
+> Python 3.10+ (Python 3.12 recommend)
+
 > Pyyaml
+
 > Texlive (For pdflatex)
 The Envivorments Paths to these Must be Set in your system.
