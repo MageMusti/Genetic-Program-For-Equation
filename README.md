@@ -8,3 +8,13 @@ The Fitness Score is Used for Selection Algorithm to Create a New Generation Whi
 The New Generation Then Goes through Crossovers and Mutation to Introduce Diversity in Generation.
 This Process is Repeated With the New Generation Until A perfect Fit is Found or The Number of Generation is Exhausted.
 The Values of Hyperparameters, Top 5 Best performing Eqautions and Table of Total Error,Average Error and Minimum Error is Saved as a Latex PDF as Result.
+
+
+## Installation
+
+### Prerequiste
+For this Program The Following are Required:
+> Python 3.10+ (Python 3.12 recommanded)
+> Pyyaml
+> Texlive (For pdflatex)
+The Envivorments Paths to these Must be Set in your system.
