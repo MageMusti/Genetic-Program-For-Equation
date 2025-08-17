@@ -21,3 +21,7 @@ For this Program The Following are Required:
 > Texlive (For pdflatex)
 
 The Envivorments Paths to these Must be Set in your system.
+### Setup
+
+Clone This Repository Using
+`git clone https://github.com/MageMusti/Genetic-Program-For-Equation`
