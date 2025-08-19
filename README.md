@@ -25,7 +25,7 @@ The Environments Paths to these Must be Set in your system.
 
 Clone This Repository Using
 
-`gh repo clone MageMusti/Genetic-Program-For-Equation`
+`git clone https://www.github.com/MageMusti/Genetic-Program-For-Equation`
 
 ## Usage
 
