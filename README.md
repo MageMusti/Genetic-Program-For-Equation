@@ -7,7 +7,7 @@ It Creates a Generation of Programs Where Each program Operates on the Input Dat
 The Fitness Score is Used for Selection Algorithm to Create a New Generation Which Gives Better Results
 The New Generation Then Goes through Crossovers and Mutation to Introduce Diversity in Generation.
 This Process is Repeated With the New Generation Until A perfect Fit is Found or The Number of Generation is Exhausted.
-The Values of Hyper parameters, Top 5 Best performing Equations and Table of Total Error,Average Error and Minimum Error is Saved as a Latex PDF as Result.
+The Values of Hyper parameters, Top 5 Best performing Equations with python and C/C++ Code and Table of Total Error,Average Error and Minimum Error is Saved as a Latex PDF as Result.
 
 
 ## Installation
@@ -18,7 +18,11 @@ For this Program The Following are Required:
 
 > Pyyaml
 
+> latexminted 
+
 > Texlive (For pdflatex)
+
+> minted(For latex)
 
 The Environments Paths to these Must be Set in your system.
 ### Setup
@@ -27,8 +31,8 @@ Clone This Repository Using
 
 `git clone https://www.github.com/MageMusti/Genetic-Program-For-Equation`
 
-## Usage
-
+# Usage
+## Genetic Program
 Browse To the Repository Directory on you Terminal
 Then run the Program as Follows:
 
@@ -74,6 +78,14 @@ The Hyper Parameters Can be Configured Form a Yaml File as Follows:
 `python GeneticProgram.py --CONFIG:/path/to/yamlfile /path/to/csvfile`
 
 For Format of yaml File, Sample Files are Provided in Config Directory.
+
+## Master Program
+The Master Program can be Used to Run Multiple Instances of Genetic Program in Sqeuence
+
+`python MasterProgram.py --CONFIG:/path/to/yamlfile --COUNT:<No_of_Iteration> /path/to/csvfile`
+
+The Given Configuration will be Followed for all runs of Genetic Program. The Output Will be stored as <Report_Name><Iteration_No>.pdf For each Iteration.
+Command line Arguments Configuration is not Possible with Master Program. A Yaml Configuration File must be used if Custom Values of Hyper Parameters is required.
 
 ### Results
 The Output of the Genetic Program is Stored in the Specified PDF file.(if pdflatex is available)
