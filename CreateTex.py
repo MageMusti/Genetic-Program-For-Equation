@@ -85,6 +85,313 @@ def WriteTexEquation(Equation:list[GP.Node],Nested:bool = False) -> str:
     
     return ""
 
+def WriterPythonCode(Equation:list[GP.Node],CodeList:list[str],Depth:int=1) -> list[str]:
+    '''
+    Converts a Postfix Equation into a Function Code for Python 
+    '''
+    match Equation[0].symbol:
+
+        case "+":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            LastIndex2:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=LastIndex+1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            if LastIndex2==LastIndex+1:
+                Term_2 = Equation[LastIndex+1].symbol
+            else:
+                Term_2 = f"Step{(Depth*10)+2}"
+                CodeList=WriterPythonCode(Equation[LastIndex+1:LastIndex2+1],CodeList,(Depth*10)+2)
+            CodeList.append(f" Step{Depth} = {Term_1} + {Term_2}")
+            return CodeList
+        case "-":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            LastIndex2:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=LastIndex+1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            if LastIndex2==LastIndex+1:
+                Term_2 = Equation[LastIndex+1].symbol
+            else:
+                Term_2 = f"Step{(Depth*10)+2}"
+                CodeList=WriterPythonCode(Equation[LastIndex+1:LastIndex2+1],CodeList,(Depth*10)+2)
+            CodeList.append(f" Step{Depth} = {Term_2} - {Term_1}")
+            return CodeList
+        case "*":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            LastIndex2:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=LastIndex+1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            if LastIndex2==LastIndex+1:
+                Term_2 = Equation[LastIndex+1].symbol
+            else:
+                Term_2 = f"Step{(Depth*10)+2}"
+                CodeList=WriterPythonCode(Equation[LastIndex+1:LastIndex2+1],CodeList,(Depth*10)+2)
+            CodeList.append(f" Step{Depth} = {Term_1} * {Term_2}")
+            return CodeList
+        case "^":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            LastIndex2:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=LastIndex+1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            if LastIndex2==LastIndex+1:
+                Term_2 = Equation[LastIndex+1].symbol
+            else:
+                Term_2 = f"Step{(Depth*10)+2}"
+                CodeList=WriterPythonCode(Equation[LastIndex+1:LastIndex2+1],CodeList,(Depth*10)+2)
+            CodeList.append(f" try: Step{Depth} = {Term_2} ** {Term_1}")
+            CodeList.append(f" except OverflowError as err: Step{Depth} = 10000000")
+            return CodeList
+        case "/":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            LastIndex2:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=LastIndex+1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            if LastIndex2==LastIndex+1:
+                Term_2 = Equation[LastIndex+1].symbol
+            else:
+                Term_2 = f"Step{(Depth*10)+2}"
+                CodeList=WriterPythonCode(Equation[LastIndex+1:LastIndex2+1],CodeList,(Depth*10)+2)
+            CodeList.append(f" try: Step{Depth} = {Term_2} / {Term_1}")
+            CodeList.append(f" except ZeroDivisionError as err: Step{Depth} = 0")
+            return CodeList
+        case "S":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            CodeList.append(f" Step{Depth} = {Term_1} ** 2")
+            return CodeList
+        case "C":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            CodeList.append(f" Step{Depth} = {Term_1} ** 3")
+            return CodeList
+        case "R":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            CodeList.append(f" try: Step{Depth} = math.sqrt({Term_1})")
+            CodeList.append(f" except ValueError as err: Step{Depth} = {Term_1}")
+            return CodeList
+        case "T":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            CodeList.append(f" Step{Depth} = math.cbrt({Term_1})")
+            return CodeList
+        case "$":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            CodeList.append(f" try: Step{Depth} = math.sin({Term_1})")
+            CodeList.append(f" except ValueError as err: Step{Depth} = 0")
+            return CodeList
+        case "&":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            if Depth==0: CodeList.append(f' return Step_{Depth}')
+            CodeList.append(f" try: Step{Depth} = math.cos({Term_1})")
+            CodeList.append(f" except ValueError as err: Step{Depth} = 1")
+            return CodeList
+        case "@":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            CodeList.append(f" try: Step{Depth} = math.tan({Term_1})")
+            CodeList.append(f" except ValueError as err: Step{Depth} = 0")
+            return CodeList
+        case _:
+            return [f" Step{Depth} = {Equation[0].symbol}"]
+
+def WriterC_Code(Equation:list[GP.Node],CodeList:list[str],Depth:int=1) -> list[str]:
+    '''
+    Converts a Postfix Equation into a Function Code for C/C++
+    '''
+    match Equation[0].symbol:
+
+        case "+":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            LastIndex2:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=LastIndex+1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterC_Code(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            if LastIndex2==LastIndex+1:
+                Term_2 = Equation[LastIndex+1].symbol
+            else:
+                Term_2 = f"Step{(Depth*10)+2}"
+                CodeList=WriterC_Code(Equation[LastIndex+1:LastIndex2+1],CodeList,(Depth*10)+2)
+            CodeList.append(f" double Step{Depth} = {Term_1} + {Term_2};")
+            return CodeList
+        case "-":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            LastIndex2:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=LastIndex+1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterC_Code(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            if LastIndex2==LastIndex+1:
+                Term_2 = Equation[LastIndex+1].symbol
+            else:
+                Term_2 = f"Step{(Depth*10)+2}"
+                CodeList=WriterC_Code(Equation[LastIndex+1:LastIndex2+1],CodeList,(Depth*10)+2)
+            CodeList.append(f" double Step{Depth} = {Term_2} - {Term_1};")
+            return CodeList
+        case "*":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            LastIndex2:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=LastIndex+1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterC_Code(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            if LastIndex2==LastIndex+1:
+                Term_2 = Equation[LastIndex+1].symbol
+            else:
+                Term_2 = f"Step{(Depth*10)+2}"
+                CodeList=WriterC_Code(Equation[LastIndex+1:LastIndex2+1],CodeList,(Depth*10)+2)
+            CodeList.append(f" double Step{Depth} = {Term_1} * {Term_2};")
+            return CodeList
+        case "^":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            LastIndex2:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=LastIndex+1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterC_Code(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            if LastIndex2==LastIndex+1:
+                Term_2 = Equation[LastIndex+1].symbol
+            else:
+                Term_2 = f"Step{(Depth*10)+2}"
+                CodeList=WriterC_Code(Equation[LastIndex+1:LastIndex2+1],CodeList,(Depth*10)+2)
+            CodeList.append(f" double Step{Depth} = pow({Term_2}, {Term_1});")
+            #CodeList.append(f" except OverflowError as err: Step{Depth} = 10000000")
+            return CodeList
+        case "/":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            LastIndex2:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=LastIndex+1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterC_Code(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            if LastIndex2==LastIndex+1:
+                Term_2 = Equation[LastIndex+1].symbol
+            else:
+                Term_2 = f"Step{(Depth*10)+2}"
+                CodeList=WriterC_Code(Equation[LastIndex+1:LastIndex2+1],CodeList,(Depth*10)+2)
+            CodeList.append(f" double Step{Depth} = {Term_2} / {Term_1};")
+            #CodeList.append(f" except ZeroDivisionError as err: Step{Depth} = 0")
+            return CodeList
+        case "S":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterC_Code(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            CodeList.append(f" double Step{Depth} = {Term_1} * {Term_1};")
+            return CodeList
+        case "C":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterC_Code(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            CodeList.append(f" double Step{Depth} = {Term_1} * {Term_1} * {Term_1};")
+            return CodeList
+        case "R":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterC_Code(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            CodeList.append(f" double Step{Depth} = sqrt({Term_1});")
+            #CodeList.append(f" except ValueError as err: Step{Depth} = {Term_1}")
+            return CodeList
+        case "T":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterC_Code(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            CodeList.append(f" double Step{Depth} = cbrt({Term_1});")
+            return CodeList
+        case "$":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterC_Code(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            CodeList.append(f" double Step{Depth} = sin({Term_1});")
+            #CodeList.append(f" except ValueError as err: Step{Depth} = 0")
+            return CodeList
+        case "&":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterC_Code(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            if Depth==0: CodeList.append(f' return Step_{Depth}')
+            CodeList.append(f" double Step{Depth} = cos({Term_1});")
+            #CodeList.append(f" except ValueError as err: Step{Depth} = 1")
+            return CodeList
+        case "@":
+            LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
+            if LastIndex==1:
+                Term_1 = Equation[1].symbol
+            else:
+                Term_1 = f"Step{(Depth*10)+1}"
+                CodeList=WriterC_Code(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
+            CodeList.append(f" double Step{Depth} = tan({Term_1});")
+            #CodeList.append(f" except ValueError as err: Step{Depth} = 0")
+            return CodeList
+        case _:
+            return [f" double Step{Depth} = {Equation[0].symbol}"]
 
 def DescribeEq(TargetFile:TextIOWrapper,Equation: list[GP.Node],InputData:list[list[int|float]],Req_Output:list[int|float],Pre_Output:list[int|float],i:int,ProgramError:int|float) -> None:
     """
@@ -117,8 +424,8 @@ The Genetic Program Was Executed On Following Data
     TargetFile.write('''
 \\subsection{Equation}
 The Equation with minimum error was''')
-    if len(Equation) >10 : TargetFile.write(f"\\begin{{equation}}\n\\resizebox{{0.95\\linewidth}}{{!}}{{$\nY={TexEquation}\n$}}\n\\end{{equation}}\\\\\n\nWith a Minimum Error of {ProgramError}\n")
-    else: TargetFile.write(f"\\[\nY={TexEquation}\\]\\\\\n\nWith a Minimum Error of {ProgramError}\n")
+    if len(Equation) >10 : TargetFile.write(f"\\begin{{equation}}\n\\resizebox{{0.95\\linewidth}}{{!}}{{$\nY={TexEquation}\n$}}\n\\end{{equation}}\n\nWith a Minimum Error of {ProgramError}\n")
+    else: TargetFile.write(f"\\[\nY={TexEquation}\\]\n\nWith a Minimum Error of {ProgramError}\n")
 
 def Create(filepath:str,equation: list[list[GP.Node]],NumberOfCode:int,TotalError:list[float],ErrorList:list[int|float],MinError:list[float],Input:list[list[int|float]],Output:list[int|float],Predict:list[list[int|float]],HParams:dict) -> None:
     """
@@ -131,13 +438,18 @@ def Create(filepath:str,equation: list[list[GP.Node]],NumberOfCode:int,TotalErro
 \\usepackage{amsmath}
 \\usepackage{longtable}
 \\usepackage{graphicx}
+\\usepackage{minted}
                       
 \\title{Report On Genetic Programs Execution}
 \\author{Mustufa Ghadiyali}
 \\date{\\today}
 \\begin{document}
+\\definecolor{cbg}{rgb}{0.1,0.1,0.3}
+\\definecolor{pygb}{rgb}{0.02,0.02,0.05}
+\\setminted[python3]{style=rrt,bgcolor=pygb}
+\\setminted[c]{style=fruity,bgcolor=cbg}
 \\maketitle
-An Auto Generated Report for the Execution\n and Operation of Genetic Program\\\\
+An Auto Generated Report for the Execution\n and Operation of Genetic Program
 \\newpage
 \\tableofcontents
 \\newpage''')
@@ -157,7 +469,36 @@ The Values of Hyper Parameters Were set as Follow for this run of\nGenetic Progr
 \\end{{itemize}}
 ''')
 
-        for i in range(len(equation)): DescribeEq(TargetFile=TexFile,Equation=equation[i],i=(i+1),InputData=Input,Req_Output=Output,Pre_Output=Predict[i],ProgramError=ErrorList[i])
+        for i in range(len(equation)): 
+            DescribeEq(TargetFile=TexFile,Equation=equation[i],i=(i+1),InputData=Input,Req_Output=Output,Pre_Output=Predict[i],ProgramError=ErrorList[i])
+            Program:list[str]=WriterPythonCode(Equation=equation[i],CodeList=[])
+            Param_list = [f"var{para_num+1}" for para_num in range(len(Input[0]))]
+            Header:str = "def func("+ ",".join(Param_list) + "):"
+            Return_Statement = " return Step1"
+            Program.insert(0,Header)
+            Program.append(Return_Statement)
+            TexFile.write('''\\subsection{Python Code}
+
+\\begin{minted}{python3}
+''')
+            for line in Program:
+                TexFile.write(line + '\n')
+            TexFile.write("\\end{minted}\n")
+
+            Program:list[str]=WriterC_Code(Equation=equation[i],CodeList=[])
+            Param_list = [f"double var{para_num+1}" for para_num in range(len(Input[0]))]
+            Header:str = "double func("+ ",".join(Param_list) + "){"
+            Return_Statement = ''' return Step1;
+}'''
+            Program.insert(0,Header)
+            Program.append(Return_Statement)
+            TexFile.write('''\\subsection{C/C++ Code}
+
+\\begin{minted}{c}
+''')
+            for line in Program:
+                TexFile.write(line + '\n')
+            TexFile.write("\\end{minted}\n")
         #TexFile.write('''
 #\\section{Data}
 #The Genetic Program Was Executed On Following Data
@@ -203,14 +544,31 @@ if __name__ == "__main__":
     Mul:GP.Node = GP.Node("*",2)
     Divide:GP.Node = GP.Node("/",2)
     Function_Set: list[GP.Node] =[Plus,Minus,Mul,Divide]
-    GP.Terminal_Set = [GP.Node("Const")]
-    for i in range(1,2):
-        GP.Terminal_Set.append(GP.Node(f"var{i}"))
+    Num9:GP.Node = GP.Node("9")
+    Var1:GP.Node = GP.Node("var1")
+    # GP.Terminal_Set = [GP.Node("Const")]
+    #for i in range(1,2):
+    #    GP.Terminal_Set.append(GP.Node(f"var{i}"))
     
-    GP.Union_List= Function_Set + GP.Terminal_Set
+    Equation:list[GP.Node] = [Plus,Var1,Num9]
+    print(WriterPythonCode(Equation,[]))
+    '''GP.Union_List= Function_Set + GP.Terminal_Set
     GP.MAX_DEPTH = 2
+    max_depth:int = 2
+    gen_size:int = 10
+    max_gen:int = 20
+    xop:float = 0.8
+    max_xo:int = gen_size//5
+    mutp:float = 0.5
+    max_mut:int = gen_size//10
+    verbose:bool = False
+    filepath:str = ''
+    PDFfile:str = "Result"
+    Fset:str = ""
+    Master:bool = False
     filename:str = input("File Name: ")
     SomeList: list[GP.Node] = [Divide,Mul,GP.Terminal_Set[1],GP.Terminal_Set[0],GP.Node("5")]
+    config = {"RESULT":PDFfile,"MAXDEPTH":max_depth,"GENSIZE":gen_size,"MAXGEN":max_gen,"XOP":xop,"MAXXO":max_xo,"MUTP":mutp,"MAXMUT":max_mut,"VERBOSE":verbose,"FSET":Fset}
     #Create(filepath=filename,equation=GP.Program.RandomCode(S=Plus,Depth=1))
-    #Create(filepath="Sample",equation=[SomeList],NumberOfCode=1,TotalError=[1,2,3,4,5,6],MinError=[0,1,2,3,4,5],Input=[[1],[2],[3],[4]],Output=[2,3,4,5],Predict=[[2,3,4,5]],ErrorList=[0])
-    os.system(f"pdflatex {filename}.tex")
+    #Create(filepath="Sample",equation=[SomeList],NumberOfCode=1,TotalError=[1,2,3,4,5,6],MinError=[0,1,2,3,4,5],Input=[[1],[2],[3],[4]],Output=[2,3,4,5],Predict=[[2,3,4,5]],ErrorList=[0],HParams={})
+    os.system(f"pdflatex {filename}.tex")'''

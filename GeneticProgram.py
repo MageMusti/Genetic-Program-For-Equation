@@ -194,7 +194,7 @@ def yamlInitialize(Data:dict) -> tuple[str,str,int,int,int,float,int,float,int,b
     except TypeError as err:print(f"Invalid Type of Verbose\nVerbose Output Set to {verbose}")
     return(Fset,PDFfile,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,verbose)
 
-def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,bool,str,str,str]:
+def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,bool,bool,str,str,str]:
     """
     Initialize Hyper Parameters Form CLI
     """
@@ -209,9 +209,10 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,boo
     filepath:str = ''
     PDFfile:str = "Result"
     Fset:str = ""
+    Master:bool = False
     global clear
     try: 
-        sys.getwindowsversion()
+        sys.getwindowsversion() # type: ignore
         clear = "cls"
     except AttributeError as err:
         clear = "clear"
@@ -239,6 +240,11 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,boo
         if arg.startswith("--VERBOSE:") or arg.startswith("-v"):
             verbose:bool = True
             print(f"Verbose Output Set to {verbose}")
+            continue
+        
+        if arg.startswith("--MASTER:") or arg.startswith("-m"):
+            Master:bool = True
+            #print(f"Verbose Output Set to {verbose}")
             continue
             
         if arg.startswith("--XOP:"):
@@ -311,7 +317,7 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,boo
 
         filepath = arg
     config = {"RESULT":PDFfile,"MAXDEPTH":max_depth,"GENSIZE":gen_size,"MAXGEN":max_gen,"XOP":xop,"MAXXO":max_xo,"MUTP":mutp,"MAXMUT":max_mut,"VERBOSE":verbose,"FSET":Fset}
-    return(config,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,verbose,filepath,PDFfile,Fset)
+    return(config,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,verbose,Master,filepath,PDFfile,Fset)
 
 def FormatCsv(filepath:str) -> tuple[list[dict[str,int|float]],list[int|float]]:
     """
@@ -360,7 +366,7 @@ def Softmax(Input: list[Program]) -> None:
         try: exponentForm.append(math.exp(GEN_SIZE/Code.error))
         except OverflowError as err: 
             exponentForm.append(1000000)
-            input(f"Too much Big Number\n{err}")
+            #input(f"Too much Big Number\n{err}")
     Sum: float = sum(exponentForm)
     for i,Code in enumerate(Input):
         Code.prob = exponentForm[i]/Sum
@@ -466,7 +472,7 @@ def Iterate(ThisGen:list[Program],GenNum:int,Terminate:bool =False,) -> list[Pro
             CreateTex.Create(filepath=PDFFILE,equation=CodeList,NumberOfCode=GEN_SIZE,
                             TotalError=Total_Error,MinError=Min_Error,Input=[list(i.values()) for i in InputData],Output=OutputData,
                             Predict=[[ProgramX.Compute(Operand=Ops) for Ops in InputData] for ProgramX in BestProgram],ErrorList=ErrorList,HParams=HyperParas)
-            #CreateTex.Create(filepath=PDFFILE,equation=Code.code,NumberOfCode=GEN_SIZE,TotalError=Total_Error,MinError=Min_Error,Input=[list(i.values()) for i in InputData],Output=OutputData,Predict=Predicted_Num) 
+            #CreateTex.Create(filepath=PDFFILE,equation=Code.code,NumberOfCode=GEN_SIZE,TotalError=Total_Error,MinError=Min_Error,Input=[list(i.values()) for i in InputData],Output=OutputData,Predict=Predicted_Num)
             exit()
         Prediction_List.append(Predicted_Num)
     t:float = sum(Error_List)
@@ -537,7 +543,7 @@ if __name__ =="__main__":
     Sin:Node = Node("$",1)
     Cos:Node = Node("&",1)
     Tan:Node = Node("@",1)
-    HyperParas,MAX_DEPTH,GEN_SIZE,MAX_GEN,XOP,MAX_XO,MUTP,MAX_MUT,VERBOSE,arg,PDFFILE,FSET=Initialize(argv) #Get Hyper Parameters
+    HyperParas,MAX_DEPTH,GEN_SIZE,MAX_GEN,XOP,MAX_XO,MUTP,MAX_MUT,VERBOSE,Master,arg,PDFFILE,FSET=Initialize(argv) #Get Hyper Parameters
 
     InputData,OutputData=FormatCsv(arg)  #Get Input and Output Data
     
@@ -555,8 +561,9 @@ if __name__ =="__main__":
         Function_Set.append(Tan)
     Terminal_Set: list[Node] = [Node("Const")]  #Initialize Terminal Set
         
-    Check:str =input("Confirm(Enter to Continue,else Stop)?")   #Confirm Parameters Values
-    if Check!="": exit()
+    if not Master:
+        Check:str =input("Confirm(Enter to Continue,else Stop)?")   #Confirm Parameters Values
+        if Check!="": exit()
     Total_Error:list[float] = []
     Min_Error:list[float] = []
 
