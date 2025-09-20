@@ -7,7 +7,7 @@ It Creates a Generation of Programs Where Each program Operates on the Input Dat
 The Fitness Score is Used for Selection Algorithm to Create a New Generation Which Gives Better Results
 The New Generation Then Goes through Crossovers and Mutation to Introduce Diversity in Generation.
 This Process is Repeated With the New Generation Until A perfect Fit is Found or The Number of Generation is Exhausted.
-The Values of Hyper parameters, Top 5 Best performing Equations with python and C/C++ Code and Table of Total Error,Average Error and Minimum Error is Saved as a Latex PDF as Result.
+The Values of Hyper parameters, Top 5 Best performing Equations with Comparsion Graph and python and C/C++ Code and Table of Total Error,Average Error and Minimum Error is Saved as a Latex PDF as Result.
 
 
 ## Installation
@@ -16,7 +16,9 @@ The Values of Hyper parameters, Top 5 Best performing Equations with python and 
 For this Program The Following are Required:
 > Python 3.10+ (Python 3.12 recommend)
 
-> Pyyaml
+> pyyaml
+
+> matplotlib
 
 > latexminted 
 
@@ -56,12 +58,16 @@ MUTP:  The Probability of a Mutation Occurring.(Default: 0.5)
 
 MAXMUT: The Maximum Number of Mutation That Occur Per Generation.(Default: Floor of GENSIZE/10)
 
+NEWP: The Probability of a New Introduction Occurring.(Default: 0.1)
+
+MAXNEW: The Maximum Number of New Introduction That Occur Per Generation.(Default: Floor of GENSIZE/10)
+
 REPORT: The Path to Report PDF file Without .pdf Extension.(Default: Result.pdf in Project Directory)
 
 VERBOSE: Pause After Each Generation to Show Crossover and Mutation verbose Output with Total and Average 
 Error(Default: False)
 
-FSET: The Set of Operations and Function to Include in Program. Add E for Exponentiation, P for Square and Cube,R for Square root and Cube Root, T for sin,cos and tan.(Default: Addition,Subtraction,Multiplication and Division only).
+FSET: The Set of Operations and Function to Include in Program. Add E for Exponentiation, P for Square and Cube,R for Square root and Cube Root, T for sin,cos and tan, L for Exponentiation and  Logarithm..(Default: Addition,Subtraction,Multiplication and Division only).
 
 ### Configure Using CLI
 
