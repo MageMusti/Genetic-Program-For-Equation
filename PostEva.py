@@ -84,17 +84,28 @@ def Unary_Calculator(FirstOperand: int| float, Operator:str) -> int|float:
             except ValueError as err:
                 return FirstOperand
         case "C":
-            Result = Integer_Helper.CheckWhetherStringIsIntegerOrFloat(FirstOperand**3)
+            try:Result = Integer_Helper.CheckWhetherStringIsIntegerOrFloat(FirstOperand**3)
+            except OverflowError as err: Result = 10000000
         case "S":
-            Result = Integer_Helper.CheckWhetherStringIsIntegerOrFloat(FirstOperand**2)
+            try:Result = Integer_Helper.CheckWhetherStringIsIntegerOrFloat(FirstOperand**2)
+            except OverflowError as err: Result = 10000000
         case "T":
             Result = Integer_Helper.CheckWhetherStringIsIntegerOrFloat(math.cbrt(FirstOperand))
         case "$":
-            Result = Integer_Helper.CheckWhetherStringIsIntegerOrFloat(math.sin(FirstOperand))
+            try:Result = Integer_Helper.CheckWhetherStringIsIntegerOrFloat(math.sin(FirstOperand))
+            except ValueError as err : Result = 0
         case "&":
-            Result = Integer_Helper.CheckWhetherStringIsIntegerOrFloat(math.cos(FirstOperand))
+            try:Result = Integer_Helper.CheckWhetherStringIsIntegerOrFloat(math.cos(FirstOperand))
+            except ValueError as err: Result = 1
         case "@":
-            Result = Integer_Helper.CheckWhetherStringIsIntegerOrFloat(math.tan(FirstOperand))
+            try:Result = Integer_Helper.CheckWhetherStringIsIntegerOrFloat(math.tan(FirstOperand))
+            except ValueError as err: Result = 0 
+        case "E":
+            try:Result = math.exp(FirstOperand)
+            except OverflowError as err: Result = 1 
+        case "L":
+            try:Result = math.log(FirstOperand)
+            except ValueError as err: Result = 0
         case _:
             print("Invalid Operator, Returning Zero")
             Result=0

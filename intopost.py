@@ -22,7 +22,7 @@ def Oper_Pre(Char: str) -> int:
             return 4
         case '-':
             return 4
-        case "R"|"C"|"S"|"T"|"$"|"&"|"@":     #Unary Operation R = Square Root, C = Cube, S = Square , T = Cube Root, $ = Sin , & = Cos , @ = tan 
+        case "R"|"C"|"S"|"T"|"$"|"&"|"@"|"E"|"L":     #Unary Operation R = Square Root, C = Cube, S = Square , T = Cube Root, $ = Sin , & = Cos , @ = tan 
             return 0
         case _:
             return -1

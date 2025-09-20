@@ -124,7 +124,7 @@ class Program:
         CodeList.extend(Program.RandomCode(Random_Node,Depth=1))
         return Program(Code=CodeList)
 
-def yamlInitialize(Data:dict) -> tuple[str,str,int,int,int,float,int,float,int,bool]:
+def yamlInitialize(Data:dict) -> tuple[str,str,int,int,int,float,int,float,int,float,int,bool]:
     """
     Initialize Hyper Parameters Form a Yaml File
     """
@@ -135,66 +135,68 @@ def yamlInitialize(Data:dict) -> tuple[str,str,int,int,int,float,int,float,int,b
     max_xo:int = gen_size//5
     mutp:float = 0.5
     max_mut:int = gen_size//10
+    newp:float = 0.1
+    max_new: int = gen_size//10
     verbose:bool = False
     PDFfile:str = "Result"
     Fset:str  = ""
-    try: 
+    if "RESULT" in Data:
         PDFfile = Data["RESULT"]
         print(f"Report Location set to {PDFfile}.pdf") 
-    except KeyError as err:...
-    except TypeError as err:print(f"Invalid Type of Report File Path\nReport File Path Set to {PDFfile}")
-    try: 
+
+    if "FSET" in Data: 
         Fset = Data["FSET"]
         print(f"Function Set set to {Fset}") 
-    except KeyError as err:...
-    except TypeError as err:print(f"Invalid Type of Fset\nFset Set to {Fset}")
-    try: 
+
+    if "MAXDEPTH" in Data:    
         max_depth = Data["MAXDEPTH"]
-        print(f"Max Depth Set to {max_depth}") 
-    except KeyError as err:...
-    except TypeError as err:print(f"Invalid Type of max depth\nMax Depth Set to {max_depth}")
-    try: 
+        print(f"Max Depth Set to {max_depth}")
+
+    if "GENSIZE" in Data: 
         gen_size = Data["GENSIZE"]
         print(f"Generation Size Set to {gen_size}")
-    except KeyError as err:...
-    except TypeError as err:print("Invalid Value for Generation Size.Taking Generation Size as 10")
-    try: 
+
+    if "MAXGEN" in Data: 
         max_gen = Data["MAXGEN"]
         print(f"Maximum Generation Set to {max_gen}")
-    except KeyError as err:...
-    except TypeError as err:print("Invalid Value for Maximum Generation.Taking Maximum Generation as 20")
-    try: 
+
+    if "XOP" in Data: 
         xop = Data["XOP"]
-        if xop<0:xop.__abs__()
+        if xop<0: xop = xop.__abs__()
         if xop>1: xop = xop/(2*xop.__ceil__())
         print(f"Crossover Probability Set to {xop}") 
-    except KeyError as err:...
-    except TypeError as err:print("Invalid Value for Crossover Probability.Taking Crossover Probability as 0.8")
-    try: 
+        
+    if "MAXXO" in Data: 
         max_xo = Data["MAXXO"]
         print(f"Max Crossovers Set to {max_xo}")
-    except KeyError as err:...
-    except TypeError as err:print("Invalid Value for Max Crossovers.Taking Max Crossovers as Generation Size//5")
-    try: 
+        
+    if "MUTP" in Data: 
         mutp = Data["MUTP"]
-        if mutp<0:mutp.__abs__()
+        if mutp<0: mutp = mutp.__abs__()
         if mutp>1: mutp = mutp/(2*mutp.__ceil__())
         print(f"Mutation Probability Set to {mutp}")
-    except KeyError as err:...
-    except TypeError as err:print("Invalid Value for Mutation Probability.Taking Mutation Probability as 0.5")
-    try: 
+         
+    if "MAXMUT" in Data: 
         max_mut = Data["MAXMUT"]
         print(f"Max Mutations Set to {max_mut}")
-    except KeyError as err:...
-    except TypeError as err:print("Invalid Value for Max Mutations.Taking Max Mutations as Generation Size//10")
-    try: 
+
+    if "NEWP" in Data: 
+        newp = Data["NEWP"]
+        if newp<0: newp = newp.__abs__()
+        if newp>1: newp = newp/(2*newp.__ceil__())
+        print(f"New Introduction Probability Set to {newp}")
+        
+    if "MAXNEW" in Data: 
+        max_new = Data["MAXNEW"]
+        print(f"Max New Introduction Set to {max_new}")
+
+    if "VERBOSE" in Data:  
         verbose = Data["VERBOSE"]
         print(f"Verbose Output Set to {verbose}")
-    except KeyError as err:...
-    except TypeError as err:print(f"Invalid Type of Verbose\nVerbose Output Set to {verbose}")
-    return(Fset,PDFfile,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,verbose)
 
-def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,bool,bool,str,str,str]:
+    return(Fset,PDFfile,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,newp,max_new,verbose)
+
+def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,float,int,bool,bool,str,str,str]:
     """
     Initialize Hyper Parameters Form CLI
     """
@@ -205,6 +207,8 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,boo
     max_xo:int = gen_size//5
     mutp:float = 0.5
     max_mut:int = gen_size//10
+    newp:float = 0.1
+    max_new: int = gen_size//10
     verbose:bool = False
     filepath:str = ''
     PDFfile:str = "Result"
@@ -216,6 +220,7 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,boo
         clear = "cls"
     except AttributeError as err:
         clear = "clear"
+    
     for i,arg in enumerate(argv,start=1):
         if i==1:
             continue
@@ -224,7 +229,7 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,boo
                 YamlFile:str = arg[len("--CONFIG:")::]
                 with open(YamlFile,"r") as File:
                     config = yaml.safe_load(File)
-                    Fset,PDFfile,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,verbose = yamlInitialize(config)
+                    Fset,PDFfile,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,newp,max_new,verbose = yamlInitialize(config)
             except FileNotFoundError as err:
                 print(f"Configuration File not Found. Using Default Values.")
             except TypeError as err:
@@ -250,7 +255,7 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,boo
         if arg.startswith("--XOP:"):
             try:
                 xop:float = float(arg[len("--XOP:")::])
-                if xop<0:xop.__abs__()
+                if xop<0: xop = xop.__abs__()
                 if xop>1: xop = xop/(2*xop.__ceil__())
                 print(f"Crossover Probability Set to {xop}")
             except TypeError as err:
@@ -263,6 +268,24 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,boo
                 print(f"Max Crossovers Set to {max_xo}")
             except TypeError as err:
                 print("Invalid Value for Max Crossovers.Taking Max Crossovers as Generation Size//5")
+            finally: continue
+
+        if arg.startswith("--MAXNEW:"):
+            try:
+                max_new:int = int(arg[len("--MAXNEW:")::])
+                print(f"Max New Introduction Set to {max_new}")
+            except TypeError as err:
+                print("Invalid Value for Max New Introduction.Taking Max New Introduction as Generation Size//10")
+            finally: continue
+
+        if arg.startswith("--NEWP:"):
+            try:
+                newp:float = float(arg[len("--NEWP:")::])
+                if newp<0: newp = newp.__abs__()
+                if newp>1: newp = newp/(2*newp.__ceil__())
+                print(f"New Introduction Probability Set to {newp}")
+            except TypeError as err:
+                print("Invalid Value for New Introduction Probability.Taking New Introduction Probability as 0.1")
             finally: continue
     
         if arg.startswith("--REPORT:"):
@@ -284,7 +307,7 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,boo
         if arg.startswith("--MUTP:"):
             try:
                 mutp:float = float(arg[len("--MUTP:")::])
-                if mutp<0:mutp.__abs__()
+                if mutp<0: mutp =mutp.__abs__()
                 if mutp>1: mutp = mutp/(2*mutp.__ceil__())
                 print(f"Mutation Probability Set to {mutp}")
             except TypeError as err:
@@ -316,8 +339,8 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,boo
             finally: continue
 
         filepath = arg
-    config = {"RESULT":PDFfile,"MAXDEPTH":max_depth,"GENSIZE":gen_size,"MAXGEN":max_gen,"XOP":xop,"MAXXO":max_xo,"MUTP":mutp,"MAXMUT":max_mut,"VERBOSE":verbose,"FSET":Fset}
-    return(config,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,verbose,Master,filepath,PDFfile,Fset)
+    config = {"RESULT":PDFfile,"MAXDEPTH":max_depth,"GENSIZE":gen_size,"MAXGEN":max_gen,"XOP":xop,"MAXXO":max_xo,"MUTP":mutp,"MAXMUT":max_mut,"VERBOSE":verbose,"FSET":Fset,"NEWP":newp,"MAXNEW":max_new}
+    return(config,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,newp,max_new,verbose,Master,filepath,PDFfile,Fset)
 
 def FormatCsv(filepath:str) -> tuple[list[dict[str,int|float]],list[int|float]]:
     """
@@ -499,6 +522,15 @@ def Iterate(ThisGen:list[Program],GenNum:int,Terminate:bool =False,) -> list[Pro
             SelectedCode:Program = random.choice(NextGen[1::])
             index:int = NextGen.index(SelectedCode,1)
             NextGen[index] = Mutation(SelectedCode)
+
+
+    for i in range(MAX_NEW):
+        if random.random()<NEWP:
+            SelectedCodeIndex:int = random.randint(1,len(NextGen[1::])-1)
+            NextGen[SelectedCodeIndex] = Program.CreateRandom()
+            if VERBOSE: print("A New Introduction is Observed")
+    
+    
     if VERBOSE:input("Proceed to New Generation?")
     return NextGen
 
@@ -519,6 +551,8 @@ if __name__ =="__main__":
             --MAXXO: Max Crossover Per Generation
             --MUTP: Mutation probability
             --MAXMUT: Max Mutation Per Generation
+            --NEWP: New Introduction Probability
+            --MAXNEW: Max New Introduction Per Generation
             --GENSIZE: Size of Each Generation
             --MAXGEN: Maximum Generation to be Explored
             --FSET: Function Set to be Used
@@ -529,7 +563,7 @@ if __name__ =="__main__":
               T for Sin, Cos and Tan''')
         exit()
 
-#Initialize Nodes
+    #Initialize Nodes
     start:float = time.perf_counter()
     Plus:Node = Node("+",2)
     Minus:Node = Node("-",2)
@@ -543,7 +577,9 @@ if __name__ =="__main__":
     Sin:Node = Node("$",1)
     Cos:Node = Node("&",1)
     Tan:Node = Node("@",1)
-    HyperParas,MAX_DEPTH,GEN_SIZE,MAX_GEN,XOP,MAX_XO,MUTP,MAX_MUT,VERBOSE,Master,arg,PDFFILE,FSET=Initialize(argv) #Get Hyper Parameters
+    Exp:Node = Node("E",1)
+    Log:Node = Node("L",1)
+    HyperParas,MAX_DEPTH,GEN_SIZE,MAX_GEN,XOP,MAX_XO,MUTP,MAX_MUT,NEWP,MAX_NEW,VERBOSE,Master,arg,PDFFILE,FSET=Initialize(argv) #Get Hyper Parameters
 
     InputData,OutputData=FormatCsv(arg)  #Get Input and Output Data
     
@@ -559,6 +595,9 @@ if __name__ =="__main__":
         Function_Set.append(Sin) 
         Function_Set.append(Cos) 
         Function_Set.append(Tan)
+    if "L" in FSET or "l" in FSET:
+        Function_Set.append(Exp)
+        Function_Set.append(Log)
     Terminal_Set: list[Node] = [Node("Const")]  #Initialize Terminal Set
         
     if not Master:
