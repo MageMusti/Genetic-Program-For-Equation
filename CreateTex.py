@@ -46,7 +46,8 @@ def WriteTexEquation(Equation:list[GP.Node],Nested:bool = False,HasPower:bool=Fa
             LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
             LastIndex2:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=LastIndex+1)
             if not Nested:return f"{{{WriteTexEquation(Equation[LastIndex+1:LastIndex2+1],Nested=True,HasPower=True)}}} ^ {{{WriteTexEquation(Equation[1:LastIndex+1],Nested=True)}}}"
-            else: return f"{{{WriteTexEquation(Equation[LastIndex+1:LastIndex2+1],Nested=True,HasPower=True)}}} ^{{({WriteTexEquation(Equation[1:LastIndex+1],Nested=True)})}}"
+            elif HasPower:return f"{{{{{WriteTexEquation(Equation[LastIndex+1:LastIndex2+1],Nested=True,HasPower=True)}}} ^ {{{WriteTexEquation(Equation[1:LastIndex+1],Nested=True)}}}}}"
+            else: return f"{{{WriteTexEquation(Equation[LastIndex+1:LastIndex2+1],Nested=True,HasPower=True)}}} ^ {{({WriteTexEquation(Equation[1:LastIndex+1],Nested=True)})}}"
         case "/":
             LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
             LastIndex2:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=LastIndex+1)
@@ -83,7 +84,7 @@ def WriteTexEquation(Equation:list[GP.Node],Nested:bool = False,HasPower:bool=Fa
         case "E":
             LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
             if not HasPower: return f"e^{{{WriteTexEquation(Equation[1:LastIndex+1],Nested=False)}}}"
-            else: return f"e^{{({{{WriteTexEquation(Equation[1:LastIndex+1],Nested=False)}}})}}"
+            else: return f"{{e^({{{WriteTexEquation(Equation[1:LastIndex+1],Nested=False)}}})}}"
         case "L":
             
             LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
@@ -91,10 +92,15 @@ def WriteTexEquation(Equation:list[GP.Node],Nested:bool = False,HasPower:bool=Fa
             else: return f"\\ln({{{WriteTexEquation(Equation[1:LastIndex+1],Nested=False)}}})"
         case _:
             if Equation[0].symbol.startswith("var"): return f"X_{{{Equation[0].symbol[len("var")::]}}}"
-            if float(Equation[0].symbol) and (Nested or HasPower) < 0: return f"({Equation[0].symbol})"
+            if float(Equation[0].symbol) < 0 and (Nested or HasPower): return f"({Equation[0].symbol})"
             return Equation[0].symbol
     
     return ""
+
+def HandleNegativeConstant(Term:str) -> str:
+    Value = GP.CIF(Term)
+    if Value=="Null" or Value>=0: return Term
+    else: return f'({Term})'
 
 def WriterPythonCode(Equation:list[GP.Node],CodeList:list[str],Depth:int=1) -> list[str]:
     '''
@@ -157,6 +163,7 @@ def WriterPythonCode(Equation:list[GP.Node],CodeList:list[str],Depth:int=1) -> l
                 CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
             if LastIndex2==LastIndex+1:
                 Term_2 = Equation[LastIndex+1].symbol
+                Term_2 = HandleNegativeConstant(Term_2)
             else:
                 Term_2 = f"Step{(Depth*10)+2}"
                 CodeList=WriterPythonCode(Equation[LastIndex+1:LastIndex2+1],CodeList,(Depth*10)+2)
@@ -185,6 +192,7 @@ def WriterPythonCode(Equation:list[GP.Node],CodeList:list[str],Depth:int=1) -> l
             LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
             if LastIndex==1:
                 Term_1 = Equation[1].symbol
+                Term_1 = HandleNegativeConstant(Term_1)
             else:
                 Term_1 = f"Step{(Depth*10)+1}"
                 CodeList=WriterPythonCode(Equation[1:LastIndex+1],CodeList,(Depth*10)+1)
@@ -357,7 +365,7 @@ def WriterC_Code(Equation:list[GP.Node],CodeList:list[str],Depth:int=1) -> list[
                 CodeList=WriterC_Code(Equation[LastIndex+1:LastIndex2+1],CodeList,(Depth*10)+2)
             CodeList.append(f" double Step{Depth};")
             CodeList.append(f" if ({Term_1}==0) Step{Depth} = 0;")
-            CodeList.append(f" else Step{Depth} = {Term_2} / {Term_1};")
+            CodeList.append(f" else Step{Depth} = (double) {Term_2} / {Term_1};")
             return CodeList
         case "S":
             LastIndex:int = PickSubTree(Code=GP.Program(Code=Equation),FirstIndex=1)
@@ -452,23 +460,23 @@ def WriterC_Code(Equation:list[GP.Node],CodeList:list[str],Depth:int=1) -> list[
         case _:
             return [f" double Step{Depth} = {Equation[0].symbol}"]
 
-def CreateErrorGraph(TotalError:list[float],MinError:list[float],GenSize:int) -> bool:
+def CreateErrorGraph(TotalError:list[float],MinError:list[float],GenSize:int,TargetFile:str) -> bool:
     generation = [i for i in range(1,len(TotalError)+1)]
     plt.xlabel("Generation")
     plt.ylabel("Total Error")
     plt.plot(generation,TotalError,scalex=True)
-    plt.savefig("TotalError.png")
+    plt.savefig(f"{TargetFile}_TotalError.png")
     plt.close()
     
     plt.xlabel("Generation")
     plt.ylabel("Minimum Error")
     plt.plot(generation,MinError,c='r')
     plt.plot(generation,[0 for i in range(len(TotalError))],c='y',ls=":")
-    plt.savefig("MinError.png")
+    plt.savefig(f"{TargetFile}_MinError.png")
     plt.close()
     return True
 
-def CreatePredictionGraph(Input:list[list[int|float]],ReqOutput:list[int|float],PreOutput:list[int|float],Performer:int) -> bool:
+def CreatePredictionGraph(Input:list[list[int|float]],ReqOutput:list[int|float],PreOutput:list[int|float],Performer:int,TargetFile:str) -> bool:
     for VarNum in range(len(Input[0])):
         CurrentInput = [Inputs[VarNum] for Inputs in Input]
         plt.xlabel(f"Input var{VarNum+1}")
@@ -476,11 +484,11 @@ def CreatePredictionGraph(Input:list[list[int|float]],ReqOutput:list[int|float],
         plt.plot(CurrentInput,PreOutput,marker='o',label="Predicted")
         plt.plot(CurrentInput,ReqOutput,c='y',marker='o',ls=":",label="Given")
         plt.legend()
-        plt.savefig(f"Prediction_{Performer}_{VarNum+1}.png")
+        plt.savefig(f"{TargetFile}_Prediction_{Performer}_{VarNum+1}.png")
         plt.close()
     return True
 
-def DescribeEq(TargetFile:TextIOWrapper,Equation: list[GP.Node],InputData:list[list[int|float]],Req_Output:list[int|float],Pre_Output:list[int|float],Performer:int,ProgramError:int|float) -> None:
+def DescribeEq(filename:str,TargetFile:TextIOWrapper,Equation: list[GP.Node],InputData:list[list[int|float]],Req_Output:list[int|float],Pre_Output:list[int|float],Performer:int,ProgramError:int|float) -> None:
     """
     Writes Predicted Result Table and Equation to Tex File
     """
@@ -508,14 +516,14 @@ The Genetic Program Was Executed On Following Data
         \\end{{center}}
 ''')               
 #\\end{{table}}''')
-    CreatePredictionGraph(Input=InputData,ReqOutput=Req_Output,PreOutput=Pre_Output,Performer=Performer)
+    CreatePredictionGraph(Input=InputData,ReqOutput=Req_Output,PreOutput=Pre_Output,Performer=Performer,TargetFile=filename)
     TargetFile.write('''
 \\subsection{Prediction Graph}''')
     for VarNum in range(len(InputData[0])):
         TargetFile.write(f'''
 \\begin{{figure}}[H]
     \\centering
-    \\includegraphics[scale=.75]{{Prediction_{Performer}_{VarNum+1}.png}}
+    \\includegraphics[scale=.75]{{{filename}_Prediction_{Performer}_{VarNum+1}.png}}
     \\caption{{ Prediction Graph with Respect to $X_{{{VarNum+1}}}$.}}
     \\label{{fig:Prediction_{Performer}_{VarNum+1}}}
 \\end{{figure}}
@@ -572,7 +580,7 @@ The Values of Hyper Parameters Were set as Follow for this run of\nGenetic Progr
 ''')
 
         for i in range(len(equation)): 
-            DescribeEq(TargetFile=TexFile,Equation=equation[i],Performer=(i+1),InputData=Input,Req_Output=Output,Pre_Output=Predict[i],ProgramError=ErrorList[i])
+            DescribeEq(filename=filepath,TargetFile=TexFile,Equation=equation[i],Performer=(i+1),InputData=Input,Req_Output=Output,Pre_Output=Predict[i],ProgramError=ErrorList[i])
             Program:list[str]=WriterPythonCode(Equation=equation[i],CodeList=[])
             Param_list = [f"var{para_num+1}" for para_num in range(len(Input[0]))]
             Header:str = "def func("+ ",".join(Param_list) + "):"
@@ -603,22 +611,22 @@ The Values of Hyper Parameters Were set as Follow for this run of\nGenetic Progr
             TexFile.write("\\end{minted}\n")
 
 
-        CreateErrorGraph(TotalError,MinError,NumberOfCode)
-        TexFile.write('''\\section{Error Statistics}
-\\subsection{Error Graph}
-\\begin{figure}[H]
+        CreateErrorGraph(TotalError,MinError,NumberOfCode,filepath)
+        TexFile.write(f'''\\section{{Error Statistics}}
+\\subsection{{Error Graph}}
+\\begin{{figure}}[H]
     \\centering
-    \\includegraphics[scale=.75]{TotalError.png}
-    \\caption{Graph of Total Error in Each Generation.}
-    \\label{fig:TotalError}
-\\end{figure}
+    \\includegraphics[scale=.75]{{{f"{filepath}_TotalError.png"}}}
+    \\caption{{Graph of Total Error in Each Generation.}}
+    \\label{{fig:TotalError}}
+\\end{{figure}}
                       
-\\begin{figure}[H]
+\\begin{{figure}}[H]
     \\centering
-    \\includegraphics[scale=.75]{MinError.png}
-    \\caption{Graph of Minimum Error in Each Generation.}
-    \\label{fig:MinError}
-\\end{figure}                      
+    \\includegraphics[scale=.75]{{{f"{filepath}_MinError.png"}}}
+    \\caption{{Graph of Minimum Error in Each Generation.}}
+    \\label{{fig:MinError}}
+\\end{{figure}}                      
                       ''')
         TexFile.write('''\\subsection{Error Table}
     \\centering
@@ -636,15 +644,15 @@ The Values of Hyper Parameters Were set as Follow for this run of\nGenetic Progr
         TexFile.write("\\end{document}")
     os.system(f"pdflatex {filepath}.tex")
     os.system(f"pdflatex {filepath}.tex")
-    os.remove("TotalError.png")
-    os.remove("MinError.png")
+    os.remove(f"{filepath}_TotalError.png")
+    os.remove(f"{filepath}_MinError.png")
     os.remove(f"{filepath}.aux")
     os.remove(f"{filepath}.log")
     os.remove(f"{filepath}.toc")
     #os.remove(f"{filepath}.tex")
     for i in range(len(equation)):
         for t in range(len(Input[0])):
-            os.remove(f"Prediction_{i+1}_{t+1}.png")
+            os.remove(f"{filepath}_Prediction_{i+1}_{t+1}.png")
 
 
 if __name__ == "__main__":

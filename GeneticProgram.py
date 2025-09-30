@@ -8,6 +8,7 @@ from Integer_Helper import CheckWhetherStringIsIntegerOrFloat as CIF
 import PostEva
 import yaml
 import CreateTex
+import Reload
 
 class Node:
     """
@@ -123,8 +124,53 @@ class Program:
         else: Random_Node:Node = random.choice(SomeList)
         CodeList.extend(Program.RandomCode(Random_Node,Depth=1))
         return Program(Code=CodeList)
+    
+    @staticmethod
+    def ParseCode(Generation:list[str]) -> list['Program']:
+        Current_Gen:list['Program'] = []
+        for Code in Generation:
+            SeperableCode = Code[1:-1]
+            CodeList:list[Node] = []
+            for Index,SomeNode in enumerate(SeperableCode.split(",")):
+                if Index: SomeNode = SomeNode[1:]
+                match SomeNode:
+                    case '^':
+                        CodeList.append(Power)
+                    case '*':
+                        CodeList.append(Mul)
+                    case '/':
+                        CodeList.append(Divide)
+                    case '+':
+                        CodeList.append(Plus)
+                    case '-':
+                        CodeList.append(Minus)
+                    case "R":
+                        CodeList.append(Square_Root)
+                    case "C":
+                        CodeList.append(Cube)
+                    case "S":
+                        CodeList.append(Square)
+                    case "T":
+                        CodeList.append(Cube_Root)
+                    case "$":
+                        CodeList.append(Sin)
+                    case "&":
+                        CodeList.append(Cos)
+                    case "@":
+                        CodeList.append(Tan)
+                    case "E":
+                        CodeList.append(Exp)
+                    case "L":
+                        CodeList.append(Log)
+                    case _:
+                        if SomeNode.startswith("var"): CodeList.append(Terminal_Set[int(SomeNode[3:])])
+                        elif CIF(SomeNode)!="Null": CodeList.append(Node(SomeNode))
+                        else: raise ValueError("Unknown Operator Detected.")
+            Current_Gen.append(Program(CodeList))
+        
+        return Current_Gen
 
-def yamlInitialize(Data:dict) -> tuple[str,str,int,int,int,float,int,float,int,float,int,bool]:
+def yamlInitialize(Data:dict) -> tuple[str,str,int,int,int,float,int,float,int,float,int,bool,bool]:
     """
     Initialize Hyper Parameters Form a Yaml File
     """
@@ -140,6 +186,7 @@ def yamlInitialize(Data:dict) -> tuple[str,str,int,int,int,float,int,float,int,f
     verbose:bool = False
     PDFfile:str = "Result"
     Fset:str  = ""
+    reloadable:bool = False
     if "RESULT" in Data:
         PDFfile = Data["RESULT"]
         print(f"Report Location set to {PDFfile}.pdf") 
@@ -193,10 +240,14 @@ def yamlInitialize(Data:dict) -> tuple[str,str,int,int,int,float,int,float,int,f
     if "VERBOSE" in Data:  
         verbose = Data["VERBOSE"]
         print(f"Verbose Output Set to {verbose}")
+    
+    if "RELOAD" in Data:  
+        reloadable = Data["RELOAD"]
+        print(f"Reload Set to {reloadable}")
 
-    return(Fset,PDFfile,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,newp,max_new,verbose)
+    return(Fset,PDFfile,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,newp,max_new,verbose,reloadable)
 
-def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,float,int,bool,bool,str,str,str]:
+def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,float,int,bool,bool,bool,bool,str,str,str,list[float],list[float],list[Program]]:
     """
     Initialize Hyper Parameters Form CLI
     """
@@ -214,7 +265,13 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,flo
     PDFfile:str = "Result"
     Fset:str = ""
     Master:bool = False
+    Reloadable:bool = False
+    ReloadingProgress:bool = False
+    Total_Error:list[float] = []
+    Min_Error:list[float] =[]
+    Last_Gen:list[Program] = []
     global clear
+    global Terminal_Set
     try: 
         sys.getwindowsversion() # type: ignore
         clear = "cls"
@@ -224,12 +281,28 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,flo
     for i,arg in enumerate(argv,start=1):
         if i==1:
             continue
+        
+        if ReloadingProgress:
+            filepath,PDFfile,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,newp,max_new,verbose,Fset,Total_Error,Min_Error,Current_Gen=Reload.load(arg)
+            InputData,OutputData = FormatCsv(filepath=filepath)
+            Terminal_Set = [Node("Const")]  #Initialize Terminal Set
+            for i in range(1,len(InputData[0])+1):
+                Terminal_Set.append(Node(f"var{i}"))    #Add Required variables
+            Last_Gen:list[Program] = Program.ParseCode(Current_Gen)
+            config = {"RESULT":PDFfile,"MAXDEPTH":max_depth,"GENSIZE":gen_size,"MAXGEN":max_gen,"XOP":xop,"MAXXO":max_xo,"MUTP":mutp,"MAXMUT":max_mut,"VERBOSE":verbose,"RELOAD":Reloadable,"FSET":Fset,"NEWP":newp,"MAXNEW":max_new}
+            return(config,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,newp,max_new,verbose,Reloadable,ReloadingProgress,Master,filepath,PDFfile,Fset,Total_Error,Min_Error,Last_Gen)
+
+        if arg.startswith("-r"):
+            ReloadingProgress = True
+            continue
+
+        
         if arg.startswith("--CONFIG:"):
             try:
                 YamlFile:str = arg[len("--CONFIG:")::]
                 with open(YamlFile,"r") as File:
                     config = yaml.safe_load(File)
-                    Fset,PDFfile,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,newp,max_new,verbose = yamlInitialize(config)
+                    Fset,PDFfile,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,newp,max_new,verbose,Reloadable = yamlInitialize(config)
             except FileNotFoundError as err:
                 print(f"Configuration File not Found. Using Default Values.")
             except TypeError as err:
@@ -247,6 +320,13 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,flo
             print(f"Verbose Output Set to {verbose}")
             continue
         
+        
+        if arg.startswith("--RELOAD:") or arg.startswith("-R"):
+            Reloadable:bool = True
+            print(f"Reload Set to {Reloadable}")
+            continue
+
+
         if arg.startswith("--MASTER:") or arg.startswith("-m"):
             Master:bool = True
             #print(f"Verbose Output Set to {verbose}")
@@ -339,10 +419,11 @@ def Initialize(argv:list[str]) -> tuple[dict,int,int,int,float,int,float,int,flo
             finally: continue
 
         filepath = arg
-    config = {"RESULT":PDFfile,"MAXDEPTH":max_depth,"GENSIZE":gen_size,"MAXGEN":max_gen,"XOP":xop,"MAXXO":max_xo,"MUTP":mutp,"MAXMUT":max_mut,"VERBOSE":verbose,"FSET":Fset,"NEWP":newp,"MAXNEW":max_new}
-    return(config,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,newp,max_new,verbose,Master,filepath,PDFfile,Fset)
+    config = {"RESULT":PDFfile,"MAXDEPTH":max_depth,"GENSIZE":gen_size,"MAXGEN":max_gen,"XOP":xop,"MAXXO":max_xo,"MUTP":mutp,"MAXMUT":max_mut,"VERBOSE":verbose,"RELOAD":Reloadable,"FSET":Fset,"NEWP":newp,"MAXNEW":max_new}
+    return(config,max_depth,gen_size,max_gen,xop,max_xo,mutp,max_mut,newp,max_new,verbose,Reloadable,ReloadingProgress,Master,filepath,PDFfile,Fset,Total_Error,Min_Error,Last_Gen)
 
 def FormatCsv(filepath:str) -> tuple[list[dict[str,int|float]],list[int|float]]:
+
     """
     This Function takes a Path to a csv file and returns
     a list of list of Integers and floats as Input for all elements except
@@ -499,10 +580,9 @@ def Iterate(ThisGen:list[Program],GenNum:int,Terminate:bool =False,) -> list[Pro
             exit()
         Prediction_List.append(Predicted_Num)
     t:float = sum(Error_List)
-    Total_Error.append(t)
+    if not Terminate: Total_Error.append(t)
     print(f"Error List: {Error_List}\nGrand Total Error:{t}\nAverage Error:{t/GEN_SIZE}")
     if Terminate:
-        Min_Error.append(ThisGen[0].error) 
         return ThisGen
     NextGen:list[Program]=Selection(Generation=ThisGen)
     Min_Error.append(ThisGen[0].error)
@@ -539,6 +619,7 @@ if __name__ =="__main__":
     if not len(argv)>1:         #Check If Sufficient Arguments
         print(f'''Invalid Usage
             Usage: python {argv[0]} <filename>.csv
+                   python {argv[0]} -r <filename>.reload
             
             The Following Options can be Specified:
               
@@ -547,6 +628,7 @@ if __name__ =="__main__":
             --REPORT: Path to Results pdf file (Without Extension)
             --MAXDEPTH:  Max Depth of Program tree
             --VERBOSE or -v: For verbose Output
+            --RELOAD or -R: For Saving Data For Reload
             --XOP: Crossover probability
             --MAXXO: Max Crossover Per Generation
             --MUTP: Mutation probability
@@ -579,9 +661,10 @@ if __name__ =="__main__":
     Tan:Node = Node("@",1)
     Exp:Node = Node("E",1)
     Log:Node = Node("L",1)
-    HyperParas,MAX_DEPTH,GEN_SIZE,MAX_GEN,XOP,MAX_XO,MUTP,MAX_MUT,NEWP,MAX_NEW,VERBOSE,Master,arg,PDFFILE,FSET=Initialize(argv) #Get Hyper Parameters
+    Terminal_Set:list[Node] = []
+    HyperParas,MAX_DEPTH,GEN_SIZE,MAX_GEN,XOP,MAX_XO,MUTP,MAX_MUT,NEWP,MAX_NEW,VERBOSE,RELOADABLE,RELOADPROGRESS,Master,Source_File,PDFFILE,FSET,Total_Error,Min_Error,Current_Gen=Initialize(argv) #Get Hyper Parameters
 
-    InputData,OutputData=FormatCsv(arg)  #Get Input and Output Data
+    InputData,OutputData=FormatCsv(Source_File)  #Get Input and Output Data
     
     Function_Set: list[Node] =[Plus,Minus,Mul,Divide]   #Initialize Function Set
     if "E" in FSET or "e" in FSET: Function_Set.append(Power)
@@ -598,21 +681,23 @@ if __name__ =="__main__":
     if "L" in FSET or "l" in FSET:
         Function_Set.append(Exp)
         Function_Set.append(Log)
-    Terminal_Set: list[Node] = [Node("Const")]  #Initialize Terminal Set
+    if not Terminal_Set:
+        Terminal_Set: list[Node] = [Node("Const")]  #Initialize Terminal Set
+        for i in range(1,len(InputData[0])+1):
+            Terminal_Set.append(Node(f"var{i}"))    #Add Required variables
         
     if not Master:
         Check:str =input("Confirm(Enter to Continue,else Stop)?")   #Confirm Parameters Values
         if Check!="": exit()
-    Total_Error:list[float] = []
-    Min_Error:list[float] = []
 
-    for i in range(1,len(InputData[0])+1):
-        Terminal_Set.append(Node(f"var{i}"))    #Add Required variables
-    Union_List:list[Node] = Function_Set + Terminal_Set #Set of All Nodes
-    Current_Gen:list[Program] = [Program.CreateRandom() for i in range(GEN_SIZE)] #First random Generation
+    Union_List:list[Node] = Function_Set + Terminal_Set  #Set of All Nodes
+    if not RELOADPROGRESS: Current_Gen:list[Program] = [Program.CreateRandom() for i in range(GEN_SIZE)] #First random Generation
+    
     for i in range(MAX_GEN):Current_Gen=Iterate(ThisGen=Current_Gen,GenNum=i)   #Main Generation Loop
     Current_Gen=Iterate(ThisGen=Current_Gen,Terminate=True,GenNum=MAX_GEN)  #Display Last Generation
     Current_Gen.sort(key= lambda x:x.error) #Sort Last Generation By Error.
+    
+    
     end:float = time.perf_counter()
     print(f"The Program With Minimum Error is:\n{Current_Gen[0]}\nWith the Total Error of {Current_Gen[0].error}\nTime Taken:{end-start:.4f} seconds")  #Print Final Result
 
@@ -627,6 +712,8 @@ if __name__ =="__main__":
             ErrorList.append(Current_Gen[i].error)
             BestProgram.append(Current_Gen[i])
         i += 1
+    print("Saving Configuration For Reload.")
+    Reload.save(InputFile=Source_File,HParams=HyperParas,Min_Error=Min_Error,Total_Error=Total_Error,lastGen=Current_Gen)
     print("Generating Report.")
     CreateTex.Create(filepath=PDFFILE,equation=CodeList,NumberOfCode=GEN_SIZE,  
                      TotalError=Total_Error,MinError=Min_Error,Input=[list(i.values()) for i in InputData],Output=OutputData,
