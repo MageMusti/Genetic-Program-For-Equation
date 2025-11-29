@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 MAXDEPTH : 4
 VERBOSE : false
 XOP : 0.8
@@ -9,4 +10,17 @@ MAXNEW: 10
 GENSIZE : 75
 MAXGEN : 50
 RESULT: Report
+=======
+MAXDEPTH : 4
+VERBOSE : false
+XOP : 0.8
+MAXXO : 38
+MUTP : 0.3
+MAXMUT : 8
+NEWP: 0.4
+MAXNEW: 10
+GENSIZE : 75
+MAXGEN : 50
+RESULT: Report
+>>>>>>> e7c4d3f (Added GUI (--gui) and Updated Documentation)
 FSET: ERPT

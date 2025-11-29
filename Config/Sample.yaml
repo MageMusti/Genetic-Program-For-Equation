@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 MAXDEPTH : 2
 VERBOSE : false
 XOP : 0.8
@@ -10,4 +11,18 @@ GENSIZE : 50
 MAXGEN : 50
 RESULT: Report
 FSET : ERPTL
+=======
+MAXDEPTH : 2
+VERBOSE : false
+XOP : 0.8
+MAXXO : 25
+MUTP : 0.1
+MAXMUT : 5
+NEWP: 0.1
+MAXNEW: 2
+GENSIZE : 20
+MAXGEN : 20
+RESULT: Report
+FSET : ERPTL
+>>>>>>> e7c4d3f (Added GUI (--gui) and Updated Documentation)
 RELOAD: true

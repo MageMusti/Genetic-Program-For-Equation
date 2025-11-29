@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 MAXDEPTH : 2
 VERBOSE : false
 XOP : 0.6
@@ -8,4 +9,16 @@ NEWP: 0
 MAXNEW: 0
 GENSIZE : 20
 MAXGEN : 20
+=======
+MAXDEPTH : 2
+VERBOSE : false
+XOP : 0.6
+MAXXO : 10
+MUTP : 0.05
+MAXMUT : 2
+NEWP: 0
+MAXNEW: 0
+GENSIZE : 20
+MAXGEN : 20
+>>>>>>> e7c4d3f (Added GUI (--gui) and Updated Documentation)
 RESULT: Report

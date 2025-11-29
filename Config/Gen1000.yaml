@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 MAXDEPTH : 5
 VERBOSE : false
 XOP : 0.9
@@ -9,4 +10,17 @@ MAXNEW: 10
 GENSIZE : 100
 MAXGEN : 1000
 RESULT: Gen1000
+=======
+MAXDEPTH : 5
+VERBOSE : false
+XOP : 0.9
+MAXXO : 50
+MUTP : 0.2
+MAXMUT : 10
+NEWP: 0.15
+MAXNEW: 10
+GENSIZE : 100
+MAXGEN : 1000
+RESULT: Gen1000
+>>>>>>> e7c4d3f (Added GUI (--gui) and Updated Documentation)
 FSET : ERPTL
