@@ -1,5 +1,6 @@
 ﻿# Genetic Program for Equation Discovery
 
+[Overview](README.md) | [Install](INSTALL.md) | [Configuration](CONFIG.md) | [GUI Guide](GUI.md)\
 A cross-platform symbolic regression engine using genetic programming to evolve mathematical expressions that fit input-output data. Designed for research workflows and GUI-based experimentation.
 
 ## Features
