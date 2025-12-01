@@ -15,11 +15,13 @@ A cross-platform symbolic regression engine using genetic programming to evolve 
 
 ## Quick Start
 
+### Run GUI (auto-selects platform)
 ```
-# Run GUI (auto-selects platform)
 python main.py --gui
+```
 
-# Run CLI
+### Run CLI
+```
 python main.py data.csv --MAXGEN:100 --MAXDEPTH:5 --FSET:ELPT
 
 ```
